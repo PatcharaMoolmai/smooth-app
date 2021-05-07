@@ -71,75 +71,95 @@ class _ProductListPageState extends State<ProductListPage> {
       case ProductList.LIST_TYPE_SCAN:
       case ProductList.LIST_TYPE_HISTORY:
     }
-    const int INDEX_COPY = 0;
-    final int indexPaste = pastable ? INDEX_COPY + 1 : -1;
-    final int indexClear = pastable ? indexPaste + 1 : INDEX_COPY + 1;
+    const int INDEX_WEB = 0;
+    final int indexPaste = pastable ? INDEX_WEB + 1 : -1;
+    final int indexClear = pastable ? indexPaste + 1 : INDEX_WEB + 1;
     final int indexShare = indexClear + 1;
-    final int indexGrocery = indexShare + 1;
+    final int indexGrocery = pastable ? INDEX_WEB + 1 : -1;
     return Scaffold(
-      bottomNavigationBar: Builder(
-        builder: (BuildContext context) => BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          items: <BottomNavigationBarItem>[
-            const BottomNavigationBarItem(
-                icon: Icon(Icons.copy), label: _TRANSLATE_ME_COPY),
-            if (pastable)
-              const BottomNavigationBarItem(
-                  icon: Icon(Icons.paste), label: _TRANSLATE_ME_PASTE),
-            const BottomNavigationBarItem(
-                icon: Icon(Icons.highlight_remove), label: _TRANSLATE_ME_CLEAR),
-            const BottomNavigationBarItem(
-                icon: Icon(Icons.launch), label: 'web'),
-            const BottomNavigationBarItem(
-                icon: Icon(Icons.local_grocery_store),
-                label: _TRANSLATE_ME_GROCERY),
-          ],
-          onTap: (final int index) async {
-            if (index == INDEX_COPY) {
-              await userPreferences.setProductListCopy(productList.lousyKey);
-            } else if (index == indexPaste) {
-              final int pasted = await daoProductList.paste(
-                  productList, userPreferences.getProductListCopy());
-              localDatabase.notifyListeners();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('$pasted products pasted'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-              setState(() {});
-            } else if (index == indexClear) {
-              await daoProductList.clear(productList);
-              localDatabase.notifyListeners();
-            } else if (index == indexShare) {
-              final List<String> codes = <String>[];
-              for (final Product product in products) {
-                codes.add(product.barcode);
-              }
-              Launcher().launchURL(
-                  context,
-                  'https://openfoodfacts.org/products/${codes.join(',')}',
-                  true);
-              return;
-            } else if (index == indexGrocery) {
-              final List<String> names = <String>[];
-              for (final Product product in products) {
-                names.add(
-                  '* ${product.productName}'
-                  ', ${product.brands}'
-                  ', ${product.quantity}',
-                );
-              }
-              Share.share(
-                names.join('\n'),
-                subject: productList.parameters,
-              );
-            } else {
-              throw Exception('Unexpected index $index');
-            }
-          },
-        ),
-      ),
+      // bottomNavigationBar: Builder(
+      //   builder: (BuildContext context) => BottomNavigationBar(
+      //     type: BottomNavigationBarType.fixed,
+      //     items: <BottomNavigationBarItem>[
+      //       // const BottomNavigationBarItem(
+      //       //     icon: Icon(Icons.copy), label: _TRANSLATE_ME_COPY),
+      //       // if (pastable)
+      //       //   const BottomNavigationBarItem(
+      //       //       icon: Icon(Icons.paste), label: _TRANSLATE_ME_PASTE),
+      //       // const BottomNavigationBarItem(
+      //       //     icon: Icon(Icons.highlight_remove), label: _TRANSLATE_ME_CLEAR),
+      //       const BottomNavigationBarItem(
+      //           icon: Icon(Icons.launch), label: 'web'),
+      //       const BottomNavigationBarItem(
+      //           icon: Icon(Icons.local_grocery_store),
+      //           label: _TRANSLATE_ME_GROCERY),
+      //     ],
+      //     onTap: (final int index) async {
+      //       if (index == INDEX_WEB) {
+      //         // await userPreferences.setProductListCopy(productList.lousyKey);
+      //         final List<String> codes = <String>[];
+      //         for (final Product product in products) {
+      //           codes.add(product.barcode);
+      //         }
+      //         Launcher().launchURL(
+      //             context,
+      //             'https://openfoodfacts.org/products/${codes.join(',')}',
+      //             true);
+      //       } else if (index == indexPaste) {
+      //         // final int pasted = await daoProductList.paste(
+      //         //     productList, userPreferences.getProductListCopy());
+      //         // localDatabase.notifyListeners();
+      //         // ScaffoldMessenger.of(context).showSnackBar(
+      //         //   SnackBar(
+      //         //     content: Text('$pasted products pasted'),
+      //         //     duration: const Duration(seconds: 2),
+      //         //   ),
+      //         // );
+      //         // setState(() {});
+      //         final List<String> names = <String>[];
+      //         for (final Product product in products) {
+      //           names.add(
+      //             '* ${product.productName}'
+      //             ', ${product.brands}'
+      //             ', ${product.quantity}',
+      //           );
+      //         }
+      //         Share.share(
+      //           names.join('\n'),
+      //           subject: productList.parameters,
+      //         );
+      //       } else if (index == indexClear) {
+      //         await daoProductList.clear(productList);
+      //         localDatabase.notifyListeners();
+      //       } else if (index == indexShare) {
+      //         final List<String> codes = <String>[];
+      //         for (final Product product in products) {
+      //           codes.add(product.barcode);
+      //         }
+      //         Launcher().launchURL(
+      //             context,
+      //             'https://openfoodfacts.org/products/${codes.join(',')}',
+      //             true);
+      //         return;
+      //       } else if (index == indexGrocery) {
+      //         final List<String> names = <String>[];
+      //         for (final Product product in products) {
+      //           names.add(
+      //             '* ${product.productName}'
+      //             ', ${product.brands}'
+      //             ', ${product.quantity}',
+      //           );
+      //         }
+      //         Share.share(
+      //           names.join('\n'),
+      //           subject: productList.parameters,
+      //         );
+      //       } else {
+      //         throw Exception('Unexpected index $index');
+      //       }
+      //     },
+      //   ),
+      // ),
       appBar: AppBar(
         backgroundColor: SmoothTheme.getColor(
           colorScheme,

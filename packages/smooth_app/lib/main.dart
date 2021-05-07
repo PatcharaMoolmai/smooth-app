@@ -6,8 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry/sentry.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smooth_app/database/database_helper.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/pages/home_page.dart';
+import 'package:smooth_app/pages/user_profile/user_login_profile.dart';
 import 'package:smooth_app/temp/product_preferences_selection.dart';
 import 'package:smooth_app/data_models/user_preferences.dart';
 import 'package:smooth_app/themes/smooth_theme.dart';
@@ -43,6 +46,7 @@ class _MyAppState extends State<MyApp> {
   LocalDatabase _localDatabase;
   ThemeProvider _themeProvider;
   bool systemDarkmodeOn = false;
+  DatabaseHelper _databaseHelper;
 
   Future<void> _init(BuildContext context) async {
     _userPreferences = await UserPreferences.getUserPreferences();
@@ -69,6 +73,7 @@ class _MyAppState extends State<MyApp> {
     await _userPreferences.init(_productPreferences);
     _localDatabase = await LocalDatabase.getLocalDatabase();
     _themeProvider = ThemeProvider(_userPreferences);
+    // _databaseHelper = await Database
   }
 
   @override
@@ -76,7 +81,21 @@ class _MyAppState extends State<MyApp> {
     final Brightness brightness =
         SchedulerBinding.instance.window.platformBrightness;
     systemDarkmodeOn = brightness == Brightness.dark;
+    // _checkLogin();
     super.initState();
+  }
+
+  bool _isLogin = false;
+  Future<void> _checkLogin() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Object isLoginState = prefs.get('isLogin');
+    final bool isLogin = (prefs.getBool('isLogin') ?? false);
+
+    setState(() {
+      _isLogin = isLogin;
+    });
+
+    print('prefs $isLogin');
   }
 
   @override
@@ -95,6 +114,9 @@ class _MyAppState extends State<MyApp> {
                   value: _localDatabase),
               ChangeNotifierProvider<ThemeProvider>.value(
                   value: _themeProvider),
+              ChangeNotifierProvider<DatabaseHelper>.value(
+                  value: _databaseHelper
+                  ),
             ],
             child: Consumer<ThemeProvider>(
               builder: (
@@ -135,26 +157,57 @@ class _MyAppState extends State<MyApp> {
 }
 
 /// Layer needed because we need to know the language
-class SmoothAppGetLanguage extends StatelessWidget {
+class SmoothAppGetLanguage extends StatefulWidget {
+  @override
+  _SmoothAppGetLanguageState createState() => _SmoothAppGetLanguageState();
+}
+
+class _SmoothAppGetLanguageState extends State<SmoothAppGetLanguage> {
+  bool _isLogin = false;
+
+  @override
+  void initState(){
+    _checkLogin();
+    super.initState();
+  }
+  Future<void> _checkLogin() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Object isLoginState = prefs.get('isLogin');
+    final bool isLogin = (prefs.getBool('isLogin') ?? false);
+
+    setState(() {
+      _isLogin = isLogin;
+    });
+
+    print('prefs $isLogin');
+  }
+
   @override
   Widget build(BuildContext context) {
     final ProductPreferences productPreferences =
         context.watch<ProductPreferences>();
     final Locale myLocale = Localizations.localeOf(context);
     final String languageCode = myLocale.languageCode;
+    final DatabaseHelper databaseHelper =context.watch<DatabaseHelper>();
     _refresh(
       productPreferences,
       DefaultAssetBundle.of(context),
+      databaseHelper,
       languageCode,
     );
-    return HomePage();
+    return 
+    // HomePage();
+    !_isLogin ? UserLogin() : HomePage();
   }
 
   Future<void> _refresh(
     final ProductPreferences productPreferences,
     final AssetBundle assetBundle,
+    final DatabaseHelper databaseHelper,
     final String languageCode,
   ) async {
+    await databaseHelper.queryAllNutritionRows();
+    
     if (productPreferences.languageCode != languageCode) {
       try {
         await productPreferences.loadReferenceFromAssets(

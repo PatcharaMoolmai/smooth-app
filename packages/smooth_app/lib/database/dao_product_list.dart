@@ -192,6 +192,7 @@ class DaoProductList {
     final Map<String, Product> products =
         await DaoProduct(localDatabase).getAll(barcodes);
     final List<Product> result = <Product>[];
+    // Method call on null
     for (final String barcode in barcodes) {
       final Product product = products[barcode];
       if (product != null) {

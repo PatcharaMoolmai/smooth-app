@@ -17,14 +17,16 @@ class SmoothTheme {
   /// Theme color tags
   static const String COLOR_TAG_BLUE = 'blue';
   static const String COLOR_TAG_GREEN = 'green';
-  static const String COLOR_TAG_BROWN = 'brown';
+  static const String COLOR_TAG_PINK = 'pink';
+  static const String COLOR_TAG_CYAN = 'cyan';
 
   /// Theme material colors
   static const Map<String, MaterialColor> MATERIAL_COLORS =
       <String, MaterialColor>{
     COLOR_TAG_BLUE: Colors.blue,
     COLOR_TAG_GREEN: Colors.green,
-    COLOR_TAG_BROWN: Colors.brown,
+    COLOR_TAG_PINK: Colors.pink,
+    COLOR_TAG_CYAN: Colors.cyan,
   };
 
   /// Returns a shade of a [materialColor]

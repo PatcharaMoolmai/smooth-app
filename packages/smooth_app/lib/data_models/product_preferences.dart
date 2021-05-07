@@ -87,17 +87,17 @@ class ProductPreferences extends ProductPreferencesManager with ChangeNotifier {
     await clearImportances(notifyListeners: false);
     await setImportance(
       AvailableAttributeGroups.ATTRIBUTE_NUTRISCORE,
-      PreferenceImportance.ID_VERY_IMPORTANT,
+      PreferenceImportance.ID_NOT_IMPORTANT,
       notifyListeners: false,
     );
     await setImportance(
       AvailableAttributeGroups.ATTRIBUTE_NOVA,
-      PreferenceImportance.ID_IMPORTANT,
+      PreferenceImportance.ID_NOT_IMPORTANT,
       notifyListeners: false,
     );
     await setImportance(
       AvailableAttributeGroups.ATTRIBUTE_ECOSCORE,
-      PreferenceImportance.ID_IMPORTANT,
+      PreferenceImportance.ID_NOT_IMPORTANT,
       notifyListeners: false,
     );
     notify();

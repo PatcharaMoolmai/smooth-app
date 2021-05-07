@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:path/path.dart';
+import 'package:smooth_app/database/database_helper.dart';
+import 'package:smooth_app/database/user_profile_database.dart';
 import 'package:sqflite/sqflite.dart';
 
 // Project imports:
@@ -34,7 +36,7 @@ class LocalDatabase extends ChangeNotifier {
     );
 
     return LocalDatabase._(database);
-  }
+  } 
 
   static const String COLUMN_TIMESTAMP = 'last_upsert';
 
@@ -47,9 +49,14 @@ class LocalDatabase extends ChangeNotifier {
   ) async {
     await DaoProduct.onUpgrade(db, oldVersion, newVersion);
     await DaoProductList.onUpgrade(db, oldVersion, newVersion);
+    // await UserProfileDatabase.onUpgrade(db, oldVersion, newVersion);
+    // await UserNutritionData.onUpgrade(db, oldVersion, newVersion);
+    // await UserHistory.onUpgrade(db, oldVersion, newVersion);
+    // await UserNutritionProfileDatabase.onUpgrade(db, oldVersion, newVersion);
   }
 
   static int nowInMillis() => DateTime.now().millisecondsSinceEpoch;
+  
 }
 
 class TableStats {

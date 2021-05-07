@@ -4,10 +4,15 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:intl/intl.dart';
 import 'package:openfoodfacts/model/Attribute.dart';
 import 'package:openfoodfacts/model/Product.dart';
 import 'package:openfoodfacts/utils/PnnsGroups.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_app/database/database_helper.dart';
+import 'package:smooth_app/functions/user_calculate.dart';
+import 'package:smooth_app/functions/user_product_process.dart';
+import 'package:smooth_app/pages/user_profile/user_card_extra.dart';
 import 'package:smooth_ui_library/widgets/smooth_card.dart';
 import 'package:smooth_ui_library/widgets/smooth_product_image.dart';
 
@@ -33,6 +38,9 @@ import 'package:smooth_app/temp/preference_importance.dart';
 import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/data_models/user_preferences.dart';
 import 'package:smooth_app/themes/smooth_theme.dart';
+import 'package:smooth_app/pages/user_profile/user_edit_profile.dart';
+import 'package:smooth_app/pages/user_profile/user_card.dart';
+import 'package:smooth_app/pages/user_profile/user_profile_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -50,10 +58,37 @@ class _HomePageState extends State<HomePage> {
 
   DaoProductList _daoProductList;
   DaoProduct _daoProduct;
+  Product _product;
 
   final TextEditingController _searchController = TextEditingController();
 
+  final DateTime today = DateTime.now();
+
   bool _visibleCloseButton = false;
+
+  final dbHelper = DatabaseHelper.instance;
+  // final DatabaseHelper dbHelper = context.watch<DatabaseHelper>();
+
+  Map<String, dynamic> _useData;
+  String _userName;
+  bool _fetchingData = true;
+
+  @override
+  void initState() {
+    _query();
+    super.initState();
+    super.widget;
+  }
+
+  Future<void> _query() async {
+    final allRows = await dbHelper.queryAllRows();
+    print('query all rows:');
+    allRows.forEach((row) => print(row));
+    setState(() {
+      _useData = allRows[0];
+      _fetchingData = false;
+    });
+  }
 
   Future<List<Product>> _search(String pattern) async {
     final bool _oldVisibleCloseButton = _visibleCloseButton;
@@ -74,6 +109,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final LocalDatabase localDatabase = context.watch<LocalDatabase>();
     final UserPreferences userPreferences = context.watch<UserPreferences>();
+    final DatabaseHelper dbHelperBuild = context.watch<DatabaseHelper>();
     final ProductPreferences productPreferences =
         context.watch<ProductPreferences>();
     _daoProductList = DaoProductList(localDatabase);
@@ -85,13 +121,13 @@ class _HomePageState extends State<HomePage> {
       Colors.grey,
       ColorDestination.SURFACE_BACKGROUND,
     );
-    return Scaffold(
-      appBar: AppBar(
+    return new Scaffold(
+      appBar:new AppBar(
         title: Row(
           children: const <Widget>[
-            Icon(Icons.pets),
+            // Icon(Icons.pets),
             SizedBox(width: 10.0),
-            Text('Smoothie'),
+            Text('HealthCode'),
           ],
         ),
         actions: <Widget>[
@@ -112,81 +148,101 @@ class _HomePageState extends State<HomePage> {
       body: ListView(
         children: <Widget>[
           //Search
-          StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return SmoothCard(
-                padding: const EdgeInsets.only(
-                    right: 8.0, left: 8.0, top: 4.0, bottom: 4.0),
-                child: ListTile(
-                  leading: Icon(
-                    Icons.search,
-                    color: SmoothTheme.getColor(
-                      colorScheme,
-                      Colors.red,
-                      _COLOR_DESTINATION_FOR_ICON,
-                    ),
-                  ),
-                  trailing: AnimatedOpacity(
-                    opacity: _visibleCloseButton ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 100),
-                    child: IgnorePointer(
-                      ignoring: !_visibleCloseButton,
-                      child: IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          setState(() {
-                            FocusScope.of(context).unfocus();
-                            _searchController.text = '';
-                            _visibleCloseButton = false;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  title: TypeAheadFormField<Product>(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller: _searchController,
-                      autofocus: false,
-                      decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'What are you looking for?'),
-                    ),
-                    hideOnEmpty: true,
-                    hideOnLoading: true,
-                    suggestionsCallback: (String value) async => _search(value),
-                    transitionBuilder: (BuildContext context,
-                        Widget suggestionsBox, AnimationController controller) {
-                      return suggestionsBox;
-                    },
-                    itemBuilder: (BuildContext context, Product suggestion) {
-                      return ListTile(
-                        title: Text(suggestion.productName),
-                        leading: SmoothProductImage(
-                          product: suggestion,
-                        ),
-                      );
-                    },
-                    onSuggestionSelected: (Product suggestion) {
-                      Navigator.push<Widget>(
-                        context,
-                        MaterialPageRoute<Widget>(
-                          builder: (BuildContext context) => ProductPage(
-                            product: suggestion,
-                          ),
-                        ),
-                      );
-                    },
-                    // TODO(m123-dev): add fullscreen search page,
-                    //onSaved: (value) => ,
-                  ),
-                ),
-              );
-            },
-          ),
+          // StatefulBuilder(
+          //   builder: (BuildContext context, StateSetter setState) {
+          //     return SmoothCard(
+          //       padding: const EdgeInsets.only(
+          //           right: 8.0, left: 8.0, top: 4.0, bottom: 4.0),
+          //       child: ListTile(
+          //         leading: Icon(
+          //           Icons.search,
+          //           color: SmoothTheme.getColor(
+          //             colorScheme,
+          //             Colors.red,
+          //             _COLOR_DESTINATION_FOR_ICON,
+          //           ),
+          //         ),
+          //         trailing: AnimatedOpacity(
+          //           opacity: _visibleCloseButton ? 1.0 : 0.0,
+          //           duration: const Duration(milliseconds: 100),
+          //           child: IgnorePointer(
+          //             ignoring: !_visibleCloseButton,
+          //             child: IconButton(
+          //               icon: const Icon(Icons.close),
+          //               onPressed: () {
+          //                 setState(() {
+          //                   FocusScope.of(context).unfocus();
+          //                   _searchController.text = '';
+          //                   _visibleCloseButton = false;
+          //                 });
+          //               },
+          //             ),
+          //           ),
+          //         ),
+          //         title: TypeAheadFormField<Product>(
+          //           textFieldConfiguration: TextFieldConfiguration(
+          //             controller: _searchController,
+          //             autofocus: false,
+          //             decoration: const InputDecoration(
+          //                 border: InputBorder.none,
+          //                 hintText: 'What are you looking for?'),
+          //           ),
+          //           hideOnEmpty: true,
+          //           hideOnLoading: true,
+          //           suggestionsCallback: (String value) async => _search(value),
+          //           transitionBuilder: (BuildContext context,
+          //               Widget suggestionsBox, AnimationController controller) {
+          //             return suggestionsBox;
+          //           },
+          //           itemBuilder: (BuildContext context, Product suggestion) {
+          //             return ListTile(
+          //               title: Text(suggestion.productName),
+          //               leading: SmoothProductImage(
+          //                 product: suggestion,
+          //               ),
+          //             );
+          //           },
+          //           onSuggestionSelected: (Product suggestion) {
+          //             Navigator.push<Widget>(
+          //               context,
+          //               MaterialPageRoute<Widget>(
+          //                 builder: (BuildContext context) => ProductPage(
+          //                   product: suggestion,
+          //                 ),
+          //               ),
+          //             );
+          //           },
+          //           // TODO(m123-dev): add fullscreen search page,
+          //           //onSaved: (value) => ,
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
+          // 00
+          //  UserProfileCard(),
+          // GestureDetector(
+          //   child: SmoothCard(
+          //       child: Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: <Widget>[
+          //         UserProfileCard(),
+          //       ])),
+          //   onTap: () async {
+          //     await Navigator.push<Widget>(
+          //       context,
+          //       MaterialPageRoute<Widget>(
+          //           builder: (BuildContext context) =>
+          //               UserCardExtra()),
+          //     );
+          //   },
+          // ),
+          _userCard(dbHelperBuild),
+
           //My lists
           _getProductListCard(
             <String>[ProductList.LIST_TYPE_USER_DEFINED],
-            'My lists',
+            'My scan product lists',
             Icon(
               Icons.list,
               color: SmoothTheme.getColor(
@@ -197,9 +253,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           //My pantries
-          _getPantryCard(userPreferences, _daoProduct, PantryType.PANTRY),
+          // _getPantryCard(userPreferences, _daoProduct, PantryType.PANTRY),
           //My shopping lists
-          _getPantryCard(userPreferences, _daoProduct, PantryType.SHOPPING),
+          // _getPantryCard(userPreferences, _daoProduct, PantryType.SHOPPING),
           //Food ranking parameters
           _getRankingPreferences(productPreferences),
           //Recently seen products
@@ -212,79 +268,79 @@ class _HomePageState extends State<HomePage> {
             nbInPreview: 5,
           ),
           //Food category's
-          GestureDetector(
-            child: SmoothCard(
-              child: ListTile(
-                leading: Icon(
-                  Icons.fastfood,
-                  color: SmoothTheme.getColor(
-                    colorScheme,
-                    Colors.orange,
-                    _COLOR_DESTINATION_FOR_ICON,
-                  ),
-                ),
-                title: Text('Food category search',
-                    style: Theme.of(context).textTheme.subtitle2),
-                subtitle: Text(
-                  '${PnnsGroup1.BEVERAGES.name}'
-                  ', ${PnnsGroup1.CEREALS_AND_POTATOES.name}'
-                  ', ${PnnsGroup1.COMPOSITE_FOODS.name}'
-                  ', ${PnnsGroup1.FAT_AND_SAUCES.name}'
-                  ', ${PnnsGroup1.FISH_MEAT_AND_EGGS.name}'
-                  ', ...',
-                ),
-              ),
-            ),
-            onTap: () async {
-              await Navigator.push<Widget>(
-                context,
-                MaterialPageRoute<Widget>(
-                  builder: (BuildContext context) => ChoosePage(),
-                ),
-              );
-            },
-          ),
+          // GestureDetector(
+          //   child: SmoothCard(
+          //     child: ListTile(
+          //       leading: Icon(
+          //         Icons.fastfood,
+          //         color: SmoothTheme.getColor(
+          //           colorScheme,
+          //           Colors.orange,
+          //           _COLOR_DESTINATION_FOR_ICON,
+          //         ),
+          //       ),
+          //       title: Text('Food category search',
+          //           style: Theme.of(context).textTheme.subtitle2),
+          //       subtitle: Text(
+          //         '${PnnsGroup1.BEVERAGES.name}'
+          //         ', ${PnnsGroup1.CEREALS_AND_POTATOES.name}'
+          //         ', ${PnnsGroup1.COMPOSITE_FOODS.name}'
+          //         ', ${PnnsGroup1.FAT_AND_SAUCES.name}'
+          //         ', ${PnnsGroup1.FISH_MEAT_AND_EGGS.name}'
+          //         ', ...',
+          //       ),
+          //     ),
+          //   ),
+          //   onTap: () async {
+          //     await Navigator.push<Widget>(
+          //       context,
+          //       MaterialPageRoute<Widget>(
+          //         builder: (BuildContext context) => ChoosePage(),
+          //       ),
+          //     );
+          //   },
+          // ),
           //Search history
-          _getProductListCard(
-            <String>[
-              ProductList.LIST_TYPE_HTTP_SEARCH_GROUP,
-              ProductList.LIST_TYPE_HTTP_SEARCH_KEYWORDS,
-              ProductList.LIST_TYPE_HTTP_SEARCH_CATEGORY,
-            ],
-            'Search history',
-            Icon(
-              Icons.youtube_searched_for,
-              color: SmoothTheme.getColor(
-                colorScheme,
-                Colors.yellow,
-                _COLOR_DESTINATION_FOR_ICON,
-              ),
-            ),
-          ),
+          // _getProductListCard(
+          //   <String>[
+          //     ProductList.LIST_TYPE_HTTP_SEARCH_GROUP,
+          //     ProductList.LIST_TYPE_HTTP_SEARCH_KEYWORDS,
+          //     ProductList.LIST_TYPE_HTTP_SEARCH_CATEGORY,
+          //   ],
+          //   'Search history',
+          //   Icon(
+          //     Icons.youtube_searched_for,
+          //     color: SmoothTheme.getColor(
+          //       colorScheme,
+          //       Colors.yellow,
+          //       _COLOR_DESTINATION_FOR_ICON,
+          //     ),
+          //   ),
+          // ),
           //Score
-          SmoothCard(
-            color: notYetColor,
-            child: const ListTile(
-              leading: Icon(
-                Icons.score,
-              ),
-              title: Text('Your current score: 14 points'),
-              subtitle: Text('The next level is at 20 points'),
-            ),
-          ),
+          // SmoothCard(
+          //   color: notYetColor,
+          //   child: const ListTile(
+          //     leading: Icon(
+          //       Icons.score,
+          //     ),
+          //     title: Text('Welcome Mr/Ms'),
+          //     subtitle: Text('The next level is at 20 points'),
+          //   ),
+          // ),
           //Contribute
-          SmoothCard(
-            padding: const EdgeInsets.only(
-                right: 8.0, left: 8.0, top: 4.0, bottom: 20.0),
-            color: notYetColor,
-            child: const ListTile(
-              leading: Icon(
-                Icons.build,
-              ),
-              title: Text('Contribute'),
-              subtitle: Text('Help us list more and more foods!'),
-            ),
-          ),
+          // SmoothCard(
+          //   padding: const EdgeInsets.only(
+          //       right: 8.0, left: 8.0, top: 4.0, bottom: 20.0),
+          //   color: notYetColor,
+          //   child: const ListTile(
+          //     leading: Icon(
+          //       Icons.build,
+          //     ),
+          //     title: Text('Contribute'),
+          //     subtitle: Text('Help us list more and more foods!'),
+          //   ),
+          // ),
         ],
       ),
 
@@ -305,6 +361,37 @@ class _HomePageState extends State<HomePage> {
           color: colorScheme.onSecondary,
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget _userCard(final DatabaseHelper databaseHelper) {
+    // Show
+    return FutureBuilder(
+      future: UserProductProcess().productToEat(_product),
+      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Container(
+          child: GestureDetector(
+            child: SmoothCard(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      UserProfileCard()
+                      ])),
+            onTap: () async {
+              await Navigator.push<Widget>(
+                context,
+                MaterialPageRoute<Widget>(
+                    builder: (BuildContext context) => UserCardExtra()),
+              );
+              super.widget;
+            },
+          ),
+        );
+        } else {
+          return const CircularProgressIndicator();
+        }
+      },
     );
   }
 
@@ -357,6 +444,7 @@ class _HomePageState extends State<HomePage> {
               }
             }
             return SmoothCard(
+              color: Colors.purple[100],
               child: Column(
                 children: <Widget>[
                   ListTile(
@@ -445,11 +533,13 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => onTap(),
       child: SmoothCard(
+        color: Colors.green[100],
         child: Column(
           children: <Widget>[
             ListTile(
               leading: Icon(
-                Icons.bar_chart,
+                // Icons.bar_chart,
+                Icons.supervised_user_circle,
                 color: SmoothTheme.getColor(
                   Theme.of(context).colorScheme,
                   Colors.green,
@@ -460,7 +550,8 @@ class _HomePageState extends State<HomePage> {
                   ? const Text('Nothing set for the moment')
                   : null,
               title: Text(
-                'Food ranking parameters',
+                // 'Food ranking parameters',
+                'Controlled nutrient',
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),
@@ -469,6 +560,7 @@ class _HomePageState extends State<HomePage> {
               children: attributes,
               spacing: 8.0,
             ),
+            // UserProfilePage(),
           ],
         ),
       ),

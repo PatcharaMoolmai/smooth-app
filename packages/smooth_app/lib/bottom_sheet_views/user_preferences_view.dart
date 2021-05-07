@@ -11,6 +11,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:openfoodfacts/model/Attribute.dart';
 import 'package:openfoodfacts/model/AttributeGroup.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_app/pages/user_profile/user_edit_profile.dart';
 import 'package:smooth_ui_library/buttons/smooth_main_button.dart';
 
 // Project imports:
@@ -18,6 +19,7 @@ import 'package:smooth_app/cards/category_cards/svg_cache.dart';
 import 'package:smooth_app/temp/preference_importance.dart';
 import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/data_models/user_preferences.dart';
+import 'package:smooth_ui_library/widgets/smooth_listTile.dart';
 
 class UserPreferencesView extends StatelessWidget {
   const UserPreferencesView(this._scrollController, {this.callback});
@@ -72,10 +74,17 @@ class UserPreferencesView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         margin: const EdgeInsets.only(top: 20.0, bottom: 24.0),
                         child: Text(
+                          // Header
                           AppLocalizations.of(context).myPreferences,
                           style: Theme.of(context).textTheme.headline1,
                         ),
                       ),
+                      //User Profile
+                      // SmoothListTile(
+                      //   // text: appLocalizations.configurePreferences,
+                      //   text: 'Edit my profile',
+                      //   onPressed: () => UserProfile.showUserProfile(context),
+                      // ),
                       _generateGroups(
                         context,
                         screenSize.width,

@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_app/pages/user_profile/user_history.dart';
 import 'package:smooth_ui_library/buttons/smooth_simple_button.dart';
 import 'package:smooth_ui_library/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_ui_library/widgets/smooth_listTile.dart';
@@ -18,12 +19,14 @@ import 'package:smooth_app/bottom_sheet_views/user_preferences_view.dart';
 import 'package:smooth_app/functions/launchURL.dart';
 import 'package:smooth_app/themes/smooth_theme.dart';
 import 'package:smooth_app/themes/theme_provider.dart';
+import 'package:smooth_app/pages/user_profile/user_edit_profile.dart';
 
 class ProfilePage extends StatelessWidget {
   static const List<String> _ORDERED_COLOR_TAGS = <String>[
     SmoothTheme.COLOR_TAG_BLUE,
     SmoothTheme.COLOR_TAG_GREEN,
-    SmoothTheme.COLOR_TAG_BROWN,
+    SmoothTheme.COLOR_TAG_PINK,
+    SmoothTheme.COLOR_TAG_CYAN,
   ];
 
   @override
@@ -59,12 +62,22 @@ class ProfilePage extends StatelessWidget {
           ),
 
           //Configure Preferences
+          // SmoothListTile(
+          //   text: appLocalizations.configurePreferences,
+          //   onPressed: () => UserPreferencesView.showModal(context),
+          // ),
+
+          //User Profile
           SmoothListTile(
-            text: appLocalizations.configurePreferences,
-            onPressed: () => UserPreferencesView.showModal(context),
-          ),
+              // text: appLocalizations.configurePreferences,
+              text: 'Edit my profile',
+              onPressed: () => 
+              // UserProfilePage()
+              UserProfile.showUserProfile(context),
+              ),
 
           // Palettes
+          const Text('App Theme'),
           SmoothListTile(
             leadingWidget: Container(),
             title: Wrap(
@@ -81,136 +94,136 @@ class ProfilePage extends StatelessWidget {
           ),
 
           //Contribute
-          SmoothListTile(
-            text: appLocalizations.contribute,
-            onPressed: () => showCupertinoModalBottomSheet<Widget>(
-              expand: false,
-              context: context,
-              backgroundColor: Colors.transparent,
-              bounce: true,
-              barrierColor: Colors.black45,
-              builder: (BuildContext context) => UserContributionView(
-                ModalScrollController.of(context),
-              ),
-            ),
-          ),
+          // SmoothListTile(
+          //   text: appLocalizations.contribute,
+          //   onPressed: () => showCupertinoModalBottomSheet<Widget>(
+          //     expand: false,
+          //     context: context,
+          //     backgroundColor: Colors.transparent,
+          //     bounce: true,
+          //     barrierColor: Colors.black45,
+          //     builder: (BuildContext context) => UserContributionView(
+          //       ModalScrollController.of(context),
+          //     ),
+          //   ),
+          // ),
 
           //Support
-          SmoothListTile(
-            text: appLocalizations.support,
-            leadingWidget: const Icon(Icons.launch),
-            onPressed: () => launcher.launchURL(
-                context, 'https://openfoodfacts.uservoice.com/', false),
-          ),
+          // SmoothListTile(
+          //   text: appLocalizations.support,
+          //   leadingWidget: const Icon(Icons.launch),
+          //   onPressed: () => launcher.launchURL(
+          //       context, 'https://openfoodfacts.uservoice.com/', false),
+          // ),
 
           //About
-          SmoothListTile(
-            text: appLocalizations.about,
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (BuildContext context) {
-                  //ToDo: Show App Icon  !!! 2x !!! + onTap open App in Store https://pub.dev/packages/open_appstore
+          // SmoothListTile(
+          //   text: appLocalizations.about,
+          //   onPressed: () {
+          //     showDialog<void>(
+          //       context: context,
+          //       builder: (BuildContext context) {
+          //         //ToDo: Show App Icon  !!! 2x !!! + onTap open App in Store https://pub.dev/packages/open_appstore
 
-                  return SmoothAlertDialog(
-                    close: false,
-                    body: Column(
-                      children: <Widget>[
-                        FutureBuilder<PackageInfo>(
-                            future: PackageInfo.fromPlatform(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<PackageInfo> snapshot) {
-                              if (snapshot.hasError) {
-                                return Center(
-                                    child:
-                                        Text('${appLocalizations.error} #0'));
-                              }
+          //         return SmoothAlertDialog(
+          //           close: false,
+          //           body: Column(
+          //             children: <Widget>[
+          //               FutureBuilder<PackageInfo>(
+          //                   future: PackageInfo.fromPlatform(),
+          //                   builder: (BuildContext context,
+          //                       AsyncSnapshot<PackageInfo> snapshot) {
+          //                     if (snapshot.hasError) {
+          //                       return Center(
+          //                           child:
+          //                               Text('${appLocalizations.error} #0'));
+          //                     }
 
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
+          //                     if (snapshot.connectionState ==
+          //                         ConnectionState.waiting) {
+          //                       return const Center(
+          //                           child: CircularProgressIndicator());
+          //                     }
 
-                              if (!snapshot.hasData)
-                                return Center(
-                                    child: Text(
-                                  '${appLocalizations.error} #1',
-                                ));
+          //                     if (!snapshot.hasData)
+          //                       return Center(
+          //                           child: Text(
+          //                         '${appLocalizations.error} #1',
+          //                       ));
 
-                              return Column(
-                                children: <Widget>[
-                                  ListTile(
-                                    leading: const Icon(Icons.no_sim_outlined),
-                                    title: Text(
-                                      snapshot.data.appName.toString(),
-                                      style: themeData.textTheme.headline1,
-                                    ),
-                                    subtitle: Text(
-                                      snapshot.data.version.toString(),
-                                      style: themeData.textTheme.subtitle2,
-                                    ),
-                                  ),
-                                  Divider(
-                                    color: themeData.colorScheme.onSurface,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  Text(appLocalizations.whatIsOff),
-                                  TextButton(
-                                    onPressed: () {
-                                      launcher.launchURL(
-                                          context,
-                                          'https://openfoodfacts.org/who-we-are',
-                                          true);
-                                    },
-                                    child: Text(
-                                      appLocalizations.learnMore,
-                                      style: const TextStyle(
-                                        color: Colors.blue,
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => launcher.launchURL(
-                                        context,
-                                        'https://openfoodfacts.org/terms-of-use',
-                                        true),
-                                    child: Text(
-                                      appLocalizations.termsOfUse,
-                                      style: const TextStyle(
-                                        color: Colors.blue,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              );
-                            }),
-                      ],
-                    ),
-                    actions: <SmoothSimpleButton>[
-                      SmoothSimpleButton(
-                        onPressed: () {
-                          showLicensePage(context: context);
-                        },
-                        text: appLocalizations.licenses,
-                        width: 100,
-                      ),
-                      SmoothSimpleButton(
-                        onPressed: () {
-                          Navigator.of(context, rootNavigator: true)
-                              .pop('dialog');
-                        },
-                        text: appLocalizations.okay,
-                        width: 100,
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
+          //                     return Column(
+          //                       children: <Widget>[
+          //                         ListTile(
+          //                           leading: const Icon(Icons.no_sim_outlined),
+          //                           title: Text(
+          //                             snapshot.data.appName.toString(),
+          //                             style: themeData.textTheme.headline1,
+          //                           ),
+          //                           subtitle: Text(
+          //                             snapshot.data.version.toString(),
+          //                             style: themeData.textTheme.subtitle2,
+          //                           ),
+          //                         ),
+          //                         Divider(
+          //                           color: themeData.colorScheme.onSurface,
+          //                         ),
+          //                         const SizedBox(
+          //                           height: 20,
+          //                         ),
+          //                         Text(appLocalizations.whatIsOff),
+          //                         TextButton(
+          //                           onPressed: () {
+          //                             launcher.launchURL(
+          //                                 context,
+          //                                 'https://openfoodfacts.org/who-we-are',
+          //                                 true);
+          //                           },
+          //                           child: Text(
+          //                             appLocalizations.learnMore,
+          //                             style: const TextStyle(
+          //                               color: Colors.blue,
+          //                             ),
+          //                           ),
+          //                         ),
+          //                         TextButton(
+          //                           onPressed: () => launcher.launchURL(
+          //                               context,
+          //                               'https://openfoodfacts.org/terms-of-use',
+          //                               true),
+          //                           child: Text(
+          //                             appLocalizations.termsOfUse,
+          //                             style: const TextStyle(
+          //                               color: Colors.blue,
+          //                             ),
+          //                           ),
+          //                         )
+          //                       ],
+          //                     );
+          //                   }),
+          //             ],
+          //           ),
+          //           actions: <SmoothSimpleButton>[
+          //             SmoothSimpleButton(
+          //               onPressed: () {
+          //                 showLicensePage(context: context);
+          //               },
+          //               text: appLocalizations.licenses,
+          //               width: 100,
+          //             ),
+          //             SmoothSimpleButton(
+          //               onPressed: () {
+          //                 Navigator.of(context, rootNavigator: true)
+          //                     .pop('dialog');
+          //               },
+          //               text: appLocalizations.okay,
+          //               width: 100,
+          //             ),
+          //           ],
+          //         );
+          //       },
+          //     );
+          //   },
+          // ),
         ],
       ),
     );

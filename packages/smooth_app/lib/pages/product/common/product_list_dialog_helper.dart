@@ -15,7 +15,7 @@ import 'package:smooth_app/themes/smooth_theme.dart';
 
 class ProductListDialogHelper {
   static const String _TRANSLATE_ME_WANT_TO_DELETE =
-      'Do you want to delete this product list?';
+      'Do you want to delete this product list? \n (all product data will be lost)';
   static const String _TRANSLATE_ME_NEW_LIST = 'New list';
   static const String _TRANSLATE_ME_RENAME_LIST = 'Rename list';
   static const String _TRANSLATE_ME_CHANGE_ICON = 'Change icon';

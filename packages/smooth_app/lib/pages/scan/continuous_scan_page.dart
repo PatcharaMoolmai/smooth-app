@@ -111,7 +111,9 @@ class ContinuousScanPage extends StatelessWidget {
                         height: screenSize.height * 0.35,
                         padding:
                             EdgeInsets.only(bottom: screenSize.height * 0.08),
-                        child: SmoothProductCarousel(
+                        child: 
+                        
+                        SmoothProductCarousel(
                           continuousScanModel: _continuousScanModel,
                         ),
                       )
